@@ -1,0 +1,4 @@
+wft.c
+=====
+
+Simple and portable file transfer tool. Written in pure C (C99).
