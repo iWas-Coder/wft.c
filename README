@@ -2,3 +2,6 @@ wft.c
 =====
 
 Simple and portable file transfer tool. Written in pure C (C99).
+
+$  cc -std=c99 -Wall -Wextra -pipe -Os server.c -static -o server
+$  cc -std=c99 -Wall -Wextra -pipe -Os client.c -static -o client
