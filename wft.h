@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #define LOG_INFO(msg, ...) printf("[*] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__);
 #define LOG_ERROR(msg, ...) fprintf(stderr, "[!] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__)
