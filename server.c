@@ -14,7 +14,11 @@ static char *buf = 0;
 void handle_client(int fd) {
   memset(buf, 0, GIGABYTE * sizeof(char));
   char filename[1024] = {0};
-  read(fd, filename, 1024);
+  if (-1 == read(fd, filename, 1024)) {
+    LOG_ERROR("unable to read requested file's name");
+    close(fd);
+    return;
+  }
   LOG_INFO("Requested file `%s`", filename);
   FILE *file_fd = fopen(filename, "rb");
   if (!fd) {
