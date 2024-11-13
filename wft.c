@@ -1,6 +1,6 @@
 #include "wft.h"
 
-static char *buf = 0;
+static unsigned char *buf = 0;
 static size_t buf_sz = 1 << 30;
 
 void wft_get_file_from_server(const char *ip, const int port, const char *file) {
@@ -23,7 +23,7 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
     close(fd);
     exit(1);
   }
-  buf = calloc(buf_sz, sizeof(char));
+  buf = calloc(buf_sz, sizeof(unsigned char));
   int bytes_recv = 0;
   while (-1 != (bytes_recv = recv(fd, buf, buf_sz, 0))) {
     LOG_INFO("bytes_recv = %d", bytes_recv);
