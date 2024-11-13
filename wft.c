@@ -1,7 +1,7 @@
 #include "wft.h"
 
 static char *buf = 0;
-static size_t buf_sz = GIGABYTE * sizeof(char);
+static size_t buf_sz = (1 << 30) * sizeof(char);
 
 void wft_get_file_from_server(const char *ip, const int port, const char *file) {
   int fd = wft_socket_create();

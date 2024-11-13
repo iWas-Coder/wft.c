@@ -17,8 +17,6 @@
 #define LOG_INFO(msg, ...) printf("[*] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__);
 #define LOG_ERROR(msg, ...) fprintf(stderr, "[!] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__)
 
-#define GIGABYTE (1024*1024*1024)
-
 int wft_socket_create(void) {
 #ifdef _WIN32
   WSADATA wsaData;
