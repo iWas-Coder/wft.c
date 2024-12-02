@@ -1,4 +1,4 @@
-#include "wft.h"
+#include "common.h"
 
 #ifdef _WIN32
 #define WFT_FILENAME_MAX_LEN 256
