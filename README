@@ -1,5 +1,5 @@
-wft.c
-=====
+wft.c (Wasym's File Transfer)
+=============================
 
 Simple and portable file transfer tool. Written in pure C (C99).
 
