@@ -15,7 +15,7 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
   }
   wft_socket_connect(fd, &addr);
   LOG_INFO("Connected to %s:%d", ip, port);
-  LOG_INFO("--> %zd", write(fd, file, strlen(file)));
+  LOG_INFO("--> %zd (`%s`)", write(fd, file, strlen(file)), file);
   shutdown(fd, SHUT_WR);
   FILE *ffd = fopen(file, "wb");
   if (!ffd) {
@@ -24,13 +24,12 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
   }
   buf = calloc(buf_sz, sizeof(unsigned char));
   ssize_t bytes_read = 0;
-  while (-1 != (bytes_read = read(fd, buf, buf_sz))) {
+  while (0 < (bytes_read = read(fd, buf, buf_sz))) {
     LOG_INFO("<-- %zd", bytes_read);
     fwrite(buf, 1, bytes_read, ffd);
-    break;
   }
+  // TODO: check file contents integrity with CRC32
   shutdown(fd, SHUT_RD);
-  LOG_INFO("File (`%s`) received successfully", file);
   free(buf);
   fclose(ffd);
   close(fd);
@@ -41,22 +40,21 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
 }
 
 void wft_serve_handle_client(int fd) {
-  memset(buf, 0, buf_sz);
   char file[1024] = {0};
-  LOG_INFO("<-- %zd", read(fd, file, 1024));
+  LOG_INFO("<-- %zd (`%s`)", read(fd, file, 1024), file);
   shutdown(fd, SHUT_RD);
-  LOG_INFO("Requested file `%s`", file);
   FILE *ffd = fopen(file, "rb");
   if (!fd) {
     LOG_ERROR("unable to open file (`%s`)", file);
     goto defer;
   }
+  memset(buf, 0, buf_sz);
   while (!feof(ffd)) {
     size_t bytes_read = fread(buf, 1, buf_sz, ffd);
     if (bytes_read) LOG_INFO("--> %zd", write(fd, buf, bytes_read));
   }
+  // TODO: check file contents integrity with CRC32
   shutdown(fd, SHUT_WR);
-  LOG_INFO("File `%s` sent successfully", file);
   fclose(ffd);
  defer:
   close(fd);
