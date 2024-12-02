@@ -1,5 +1,11 @@
 #include "wft.h"
 
+#ifdef _WIN32
+#define WFT_FILENAME_MAX_LEN 256
+#else
+#define WFT_FILENAME_MAX_LEN 4096
+#endif
+
 static unsigned char *buf = 0;
 static size_t buf_sz = 1 << 30;
 
@@ -40,8 +46,8 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
 }
 
 void wft_serve_handle_client(int fd) {
-  char file[1024] = {0};
-  LOG_INFO("<-- %zd (`%s`)", read(fd, file, 1024), file);
+  char file[WFT_FILENAME_MAX_LEN] = {0};
+  LOG_INFO("<-- %zd (`%s`)", read(fd, file, WFT_FILENAME_MAX_LEN), file);
   shutdown(fd, SHUT_RD);
   FILE *ffd = fopen(file, "rb");
   if (!fd) {
