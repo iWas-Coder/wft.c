@@ -4,6 +4,6 @@ wft.c
 Wasym's File Transfer, written in pure C (C99).
 
 Simple and portable file transfer tool. No дерьмо, no scheiße,
-just a C compiler and some files no transfer between devices.
+just a C compiler and some files to transfer between devices.
 
 $  cc -std=c99 -Wall -Wextra -pipe -Os wft.c -static -o wft
