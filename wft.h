@@ -17,6 +17,8 @@
 #define LOG_INFO(msg, ...) printf("[*] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__);
 #define LOG_ERROR(msg, ...) fprintf(stderr, "[!] " __FILE__ ":%d (%s) :: " msg "\n", __LINE__, __func__, ##__VA_ARGS__)
 
+#define WFT_SOCKET_LISTEN_BACKLOG 69
+
 int wft_socket_create(void) {
 #ifdef _WIN32
   WSADATA wsaData;
@@ -57,12 +59,12 @@ void wft_socket_bind(int fd, const struct sockaddr_in * restrict addr) {
 
 void wft_socket_listen(int fd) {
 #ifdef _WIN32
-  if (SOCKET_ERROR != listen(fd, 3)) return;
+  if (SOCKET_ERROR != listen(fd, WFT_SOCKET_LISTEN_BACKLOG)) return;
   LOG_ERROR("unable to listen through socket (%d)", WSAGetLastError());
   closesocket(fd);
   WSACleanup();
 #else
-  if (-1 != listen(fd, 3)) return;
+  if (-1 != listen(fd, WFT_SOCKET_LISTEN_BACKLOG)) return;
   LOG_ERROR("unable to listen through socket (%s)", strerror(errno));
   close(fd);
 #endif

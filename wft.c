@@ -11,52 +11,54 @@ void wft_get_file_from_server(const char *ip, const int port, const char *file) 
   };
   if (0 >= inet_pton(AF_INET, ip, &addr.sin_addr)) {
     LOG_ERROR("invalid IP address");
-    close(fd);
-    exit(1);
+    goto defer;
   }
   wft_socket_connect(fd, &addr);
   LOG_INFO("Connected to %s:%d", ip, port);
-  send(fd, file, strlen(file), 0);
-  FILE *file_fd = fopen(file, "wb");
-  if (!file_fd) {
+  LOG_INFO("--> %zd", write(fd, file, strlen(file)));
+  shutdown(fd, SHUT_WR);
+  FILE *ffd = fopen(file, "wb");
+  if (!ffd) {
     LOG_ERROR("unable to open file (`%s`)", file);
-    close(fd);
-    exit(1);
+    goto defer;
   }
   buf = calloc(buf_sz, sizeof(unsigned char));
-  int bytes_recv = 0;
-  while (-1 != (bytes_recv = recv(fd, buf, buf_sz, 0))) {
-    LOG_INFO("bytes_recv = %d", bytes_recv);
-    fwrite(buf, 1, bytes_recv, file_fd);
+  ssize_t bytes_read = 0;
+  while (-1 != (bytes_read = read(fd, buf, buf_sz))) {
+    LOG_INFO("<-- %zd", bytes_read);
+    fwrite(buf, 1, bytes_read, ffd);
     break;
   }
+  shutdown(fd, SHUT_RD);
   LOG_INFO("File (`%s`) received successfully", file);
   free(buf);
-  fclose(file_fd);
+  fclose(ffd);
   close(fd);
+  return;
+ defer:
+  close(fd);
+  exit(1);
 }
 
 void wft_serve_handle_client(int fd) {
   memset(buf, 0, buf_sz);
   char file[1024] = {0};
-  if (-1 == read(fd, file, 1024)) {
-    LOG_ERROR("unable to read requested file's name");
-    close(fd);
-    return;
-  }
+  LOG_INFO("<-- %zd", read(fd, file, 1024));
+  shutdown(fd, SHUT_RD);
   LOG_INFO("Requested file `%s`", file);
-  FILE *file_fd = fopen(file, "rb");
+  FILE *ffd = fopen(file, "rb");
   if (!fd) {
     LOG_ERROR("unable to open file (`%s`)", file);
-    close(fd);
-    return;
+    goto defer;
   }
-  while (!feof(file_fd)) {
-    size_t bytes_read = fread(buf, 1, buf_sz, file_fd);
-    if (bytes_read) send(fd, buf, bytes_read, 0);
+  while (!feof(ffd)) {
+    size_t bytes_read = fread(buf, 1, buf_sz, ffd);
+    if (bytes_read) LOG_INFO("--> %zd", write(fd, buf, bytes_read));
   }
+  shutdown(fd, SHUT_WR);
   LOG_INFO("File `%s` sent successfully", file);
-  fclose(file_fd);
+  fclose(ffd);
+ defer:
   close(fd);
 }
 
@@ -81,6 +83,7 @@ void wft_serve_dir(const int port) {
 
 int main(int argc, char **argv) {
   if (argc < 2) goto defer;
+  // TODO: introduce new `ls` client command
   if (!strcmp(argv[1], "get")) {
     if (argc != 5) {
       LOG_ERROR("usage: %s get [IP] [PORT] [FILE]", argv[0]);
