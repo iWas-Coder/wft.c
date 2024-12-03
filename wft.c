@@ -9,6 +9,24 @@
 static unsigned char *buf = 0;
 static size_t buf_sz = 1 << 30;
 
+void wft_get_directory_listing(const char *ip, const int port) {
+  int fd = wft_socket_create();
+  struct sockaddr_in addr = {
+    .sin_family = AF_INET,
+    .sin_port = htons(port)
+  };
+  if (0 >= inet_pton(AF_INET, ip, &addr.sin_addr)) {
+    LOG_ERROR("invalid IP address");
+    close(fd);
+    exit(1);
+  }
+  wft_socket_connect(fd, &addr);
+  LOG_INFO("Connected to %s:%d", ip, port);
+  // TODO: implement `ls` client command functionality
+  LOG_ERROR("Not implemented yet");
+  close(fd);
+}
+
 void wft_get_file_from_server(const char *ip, const int port, const char *file) {
   int fd = wft_socket_create();
   struct sockaddr_in addr = {
@@ -87,7 +105,14 @@ void wft_serve_dir(const int port) {
 
 int main(int argc, char **argv) {
   if (argc < 2) goto defer;
-  // TODO: introduce new `ls` client command
+  if (!strcmp(argv[1], "ls")) {
+    if (argc != 4) {
+      LOG_ERROR("usage: %s ls [IP] [PORT]", argv[0]);
+      return 1;
+    }
+    wft_get_directory_listing(argv[2], atoi(argv[3]));
+    return 0;
+  }
   if (!strcmp(argv[1], "get")) {
     if (argc != 5) {
       LOG_ERROR("usage: %s get [IP] [PORT] [FILE]", argv[0]);
